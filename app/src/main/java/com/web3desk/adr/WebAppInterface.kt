@@ -57,6 +57,12 @@ class WebAppInterface(private val context: MainActivity) {
     }
 
     @JavascriptInterface
+    fun start_scanner(): Boolean {
+        context.startScanner()
+        return true;
+    }
+
+    @JavascriptInterface
     fun start_capture(): Boolean {
         context.mainService?.let {
             return it.startCapture()

@@ -18,6 +18,8 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.zxing.integration.android.IntentIntegrator
+import com.google.zxing.integration.android.IntentResult
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
@@ -50,6 +52,16 @@ class MainActivity : AppCompatActivity() {
         webView.loadUrl(HOME_URL)
         webView.addJavascriptInterface(WebAppInterface(this), "__AndroidAPI")
         LocalBroadcastManager.getInstance(this).registerReceiver(messageReceiver, IntentFilter("WebViewMessage"))
+    }
+    fun startScanner() {
+        val integrator = IntentIntegrator(this)
+        integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES) // Set the types of codes you want to scan
+        integrator.setPrompt("扫码二维码") // Customize prompt
+        integrator.setCameraId(0) // Use a specific camera (0 for back camera)
+        integrator.setBeepEnabled(true) // Enable beep sound after scan
+        integrator.setBarcodeImageEnabled(true) // Save scanned barcode image
+
+        integrator.initiateScan() // Start scanning
     }
 
     override fun onResume() {
@@ -135,13 +147,21 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Log.d(logTag,"on_media_projection")
         if (requestCode == REQ_INVOKE_PERMISSION_ACTIVITY_MEDIA_PROJECTION && resultCode == RES_FAILED) {
-            Log.d(logTag,"on_media_projection canceled")
             sendMessageToWebView(JSONObject().apply {
                 put("action","on_media_projection_canceled")
             }.toString())
         }
-    }
+        if(requestCode != REQ_INVOKE_PERMISSION_ACTIVITY_MEDIA_PROJECTION ){
+            val result: IntentResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data)
+            if (result.contents != null) {
+                sendMessageToWebView(JSONObject().apply {
+                    put("action","on_scan_result")
+                    put("payload",result.contents)
+                }.toString())
+            }
+        }
 
+
+    }
 }

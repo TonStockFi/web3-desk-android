@@ -18,8 +18,7 @@ import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
 import java.util.*
 
-//const val HOME_URL = "http://192.168.43.133:5173/"
-//const val HOME_URL = "http://192.168.43.244:5173/"
+const val HOME_URL_DEV = "http://192.168.43.244:5173/"
 const val HOME_URL = "file:///android_asset/index.html"
 
 // intent action, extra
